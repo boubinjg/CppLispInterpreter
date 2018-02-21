@@ -4,20 +4,37 @@
 #include<algorithm>
 #include<cctype>
 struct token{
-	//rPeren, lPeren, dollar, symbolID, integer, whitespace
+	//rParen, lParen, dollar, symbolID, integer, whitespace
 	std::string tokenType;
 	std::string tokenText;
 };
 
-class SExp{
+struct SExp{
 	int type;                //1: integer atom; 2: symbolic atom; 3: non-atom
 	int val;                 //if type 1
-	string name;             //if type 2
+	std::string name;        //if type 2
 	SExp* left; SExp* right; //if type 3;
-}
+};
 
 //read std::cin until $$ is encountered
 //then split by $ into a vector
+void print(SExp* e){
+	//std::cout<<"in print"<<std::endl;
+	//std::cout<<e->val<<std::endl;
+	if(e->type == 3){
+		std::cout<<"(";
+		print(e->left);
+		std::cout<<".";
+		print(e->right);
+		std::cout<<")";
+	}
+	else if(e->type == 2){
+		std::cout<<e->name;
+	}
+	else if(e->type == 1){
+		std::cout<<e->val;
+	}
+}
 std::vector<std::string> readInput(){
 	std::string exps;
 	std::vector<std::string> expAsStr;
@@ -49,16 +66,13 @@ std::vector<std::string> readInput(){
 }
 std::vector<token> tokenize(std::string s){
 	std::vector<token> tokenizedStr;
-	std::cout<<"Tokenizing String:"<<std::endl;
-	std::cout<<s<<std::endl;
-	std::cout<<"End String"<<std::endl;
 	for(auto it = s.begin(); it!=s.end(); ++it){
 		if(*it == '('){
-			token t{.tokenType = "lPeren", .tokenText="("};
+			token t{.tokenType = "lParen", .tokenText="("};
 			tokenizedStr.push_back(t);
 		}
 		else if(*it == ')'){
-			token t{.tokenType = "rPeren", .tokenText=")"};
+			token t{.tokenType = "rParen", .tokenText=")"};
 			tokenizedStr.push_back(t);
 		}
 		else if(isspace(*it)){
@@ -93,8 +107,59 @@ std::vector<token> tokenize(std::string s){
 	}
 	return tokenizedStr; 
 }
-SExp sExpresconvertToInternalRep(){
-	
+size_t findMidDot(std::vector<token> exp){
+	std::cout<<"inMidDot"<<std::endl;
+	int depth = 0;
+	for(auto it = exp.begin(); it!=exp.end(); ++it){
+		if(it->tokenType == "lParen")
+			++depth;
+		else if(it->tokenType == "rParen")
+			--depth;
+		else if(it->tokenType == "dot" && depth==0){
+			std::cout<<it-exp.begin()<<std::endl;
+			return (it-exp.begin())+1;
+		}
+	}
+	return exp.begin()-exp.end();
+}
+SExp* convertToInternalRep(std::vector<token> exp){
+	SExp *e = new SExp;
+	std::cout<<"in"<<std::endl;
+	if(exp.size() == 1){
+		if(exp[0].tokenType == "int"){
+			e->type = 1;
+			e->val = std::stoi(exp[0].tokenText);
+			//std::cout<<"e1"<<std::endl;
+			return e;
+		}
+		else if(exp[0].tokenType == "symbolId"){
+			e->type = 2;
+			e->name = exp[0].tokenText;
+			//std::cout<<"e2"<<std::endl;
+			return e;
+		}
+	}
+	else if(exp[0].tokenType == "lParen" && exp[exp.size()-1].tokenType == "rParen"){
+		//auto nextDot = std::find_if(exp.begin()+1, exp.end()-1, [](token t){return t.tokenType == "dot";});
+		auto nextDot = findMidDot(std::vector<token>(exp.begin()+1, exp.end()-1));
+		e->type = 3;
+		std::cout<<(exp.begin()+1)->tokenType<<std::endl;
+		std::cout<<(exp.begin()+nextDot-1)->tokenType<<std::endl;
+
+		e->left = convertToInternalRep(std::vector<token>(exp.begin()+1, exp.begin()+nextDot));
+		std::cout<<"next2"<<std::endl;
+		e->right = convertToInternalRep(std::vector<token>(exp.begin()+nextDot+1, exp.end()-1));
+		//std::cout<<"e3"<<std::endl;
+		return e;
+	} else {
+		std::cout<<exp[0].tokenType<<" "<<exp[0].tokenText<<std::endl;
+		std::cout<<exp[exp.size()-1].tokenType<<" "<<exp[exp.size()-1].tokenText<<std::endl;
+		std::cout<<"Not an S Expression"<<std::endl;
+		//std::cout<<"e4"<<std::endl;
+		return e;
+	}
+	//std::cout<<"e5"<<std::endl;
+	return e;
 }
 int main(){
 	std::vector<std::string> s = readInput();
@@ -104,6 +169,8 @@ int main(){
 	}
 	
 	for(auto exp : tokenizedExprs){
-		convertToInternalRep();
+		SExp* e = convertToInternalRep(exp);
+		print(e);
+		//std::cout<<e->left->val<<std::endl;
 	}
 }
