@@ -35,6 +35,11 @@ void print(SExp* e){
 		std::cout<<e->val;
 	}
 }
+void print(std::vector<token> exp){
+	for(auto i : exp){
+		std::cout<<i.tokenType<<" "<<i.tokenText<<std::endl;
+	}
+}
 std::vector<std::string> readInput(){
 	std::string exps;
 	std::vector<std::string> expAsStr;
@@ -122,9 +127,47 @@ size_t findMidDot(std::vector<token> exp){
 	}
 	return exp.begin()-exp.end();
 }
+std::vector<token> findCarandCdr(std::vector<token>& exp){
+	exp.erase(exp.begin());
+	exp.erase(exp.end()-1);
+
+	std::vector<token> car, cdr;
+
+	if(exp[0].tokenType == "int"){
+		car.push_back(exp[0]);
+		exp.erase(exp.begin());		
+	} else if(exp[0].tokenType == "symbolId"){
+
+	}
+
+}
+void trim(std::vector<token>& exp){
+	auto wsfront = exp.begin()-1, wsend = exp.end();
+	for(auto it = exp.begin(); it!=exp.end(); it++){
+		if(it->tokenType == "whitespace")
+			wsfront = it;
+		else
+			break;
+	}
+	for(auto it = exp.end()-1; it!=exp.begin(); it--){
+		if(it->tokenType == "whitespace")
+			wsend = it;
+		else
+			break;
+	}
+	//erase back first so iterator aren't invalidated
+	if(wsend != exp.end()){
+		exp.erase(wsend, exp.end());
+	}
+	if(wsfront != exp.begin()-1){
+		exp.erase(exp.begin(), wsfront+1);
+	}
+	
+}
 SExp* convertToInternalRep(std::vector<token> exp){
 	SExp *e = new SExp;
 	std::cout<<"in"<<std::endl;
+	trim(exp);
 	if(exp.size() == 1){
 		if(exp[0].tokenType == "int"){
 			e->type = 1;
@@ -142,6 +185,9 @@ SExp* convertToInternalRep(std::vector<token> exp){
 	else if(exp[0].tokenType == "lParen" && exp[exp.size()-1].tokenType == "rParen"){
 		//auto nextDot = std::find_if(exp.begin()+1, exp.end()-1, [](token t){return t.tokenType == "dot";});
 		auto nextDot = findMidDot(std::vector<token>(exp.begin()+1, exp.end()-1));
+
+		std::vector<token> car = findCarAndCdr(exp);		
+
 		e->type = 3;
 		std::cout<<(exp.begin()+1)->tokenType<<std::endl;
 		std::cout<<(exp.begin()+nextDot-1)->tokenType<<std::endl;
@@ -152,9 +198,10 @@ SExp* convertToInternalRep(std::vector<token> exp){
 		//std::cout<<"e3"<<std::endl;
 		return e;
 	} else {
-		std::cout<<exp[0].tokenType<<" "<<exp[0].tokenText<<std::endl;
-		std::cout<<exp[exp.size()-1].tokenType<<" "<<exp[exp.size()-1].tokenText<<std::endl;
+		//std::cout<<exp[0].tokenType<<" "<<exp[0].tokenText<<std::endl;
+		//std::cout<<exp[exp.size()-1].tokenType<<" "<<exp[exp.size()-1].tokenText<<std::endl;
 		std::cout<<"Not an S Expression"<<std::endl;
+		print(exp);
 		//std::cout<<"e4"<<std::endl;
 		return e;
 	}
