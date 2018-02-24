@@ -164,8 +164,8 @@ std::vector<token> findCarAndCdr(std::vector<token>& exp){
 		car = std::vector<token>(exp.begin(), end+1);
 		exp.erase(exp.begin(), end+1);
 	}
-	std::cout<<"CAR"<<std::endl;
-	print(car);
+	//std::cout<<"CAR"<<std::endl;
+	//print(car);
 	
 	if(exp.size() == 0){
 		token t{.tokenType = "symbolId", .tokenText="NIL"};
@@ -181,14 +181,13 @@ std::vector<token> findCarAndCdr(std::vector<token>& exp){
 		trim(cdr);
 	} else
 		std::cout<<"error1"<<std::endl;
-	std::cout<<"CDR"<<std::endl;
-	print(cdr);
+	//std::cout<<"CDR"<<std::endl;
+	//print(cdr);
 
 	exp = cdr; //great practice, thumbs up.
 	return car;
 }
 SExp* convertList(std::vector<token> exp){
-	std::cout<<"ctl"<<std::endl;
 	trim(exp);
 	SExp *e = new SExp;
 	e->type = 3;
@@ -234,7 +233,6 @@ SExp* convertList(std::vector<token> exp){
 		e->left = convertToInternalRep(std::vector<token>(exp.begin(), exp.begin()+1));
 		e->right = nil;
 	}
-	std::cout<<"leave ctl"<<std::endl;
 	return e;
 }
 SExp* convertToInternalRep(std::vector<token> exp){
