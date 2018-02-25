@@ -46,7 +46,6 @@ std::vector<std::string> readInput(){
 	std::string exps;
 	std::vector<std::string> expAsStr;
 	
-	char cur;
 	bool finished = false;
 	std::string s;
 	while(!finished && std::getline(std::cin, s)){
@@ -114,7 +113,6 @@ std::vector<token> tokenize(std::string s){
 		} else if(isspace(*it)){
 			token t{.tokenType = "whitespace", .tokenText=" "};
 			tokenizedStr.push_back(t);
-			auto beg = it;
 			for(auto itt = it; it != s.end() && isspace(*itt); itt++)
 				it = itt;
 		} else if(*it == '.'){
