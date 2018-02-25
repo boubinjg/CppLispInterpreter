@@ -3,6 +3,8 @@
 #include<vector>
 #include<algorithm>
 #include<cctype>
+#include<stdexcept>
+#include<unordered_map>
 struct token{
 	//rParen, lParen, dollar, symbolID, integer, whitespace
 	std::string tokenType;
@@ -10,6 +12,7 @@ struct token{
 };
 
 struct SExp{
+	std::unordered_map<std::string, SExp*> usedIds;
 	int type;                //1: integer atom; 2: symbolic atom; 3: non-atom
 	int val;                 //if type 1
 	std::string name;        //if type 2
@@ -28,11 +31,9 @@ void print(SExp* e){
 		std::cout<<".";
 		print(e->right);
 		std::cout<<")";
-	}
-	else if(e->type == 2){
+	} else if(e->type == 2){
 		std::cout<<e->name;
-	}
-	else if(e->type == 1){
+	} else if(e->type == 1){
 		std::cout<<e->val;
 	}
 }
@@ -74,6 +75,10 @@ bool isAtom(token t){
 	return (t.tokenType == "int" || t.tokenType == "symbolId");
 }
 void trim(std::vector<token>& exp){
+	if(exp.size() < 1){
+		return;
+	}
+	
 	auto wsfront = exp.begin()-1, wsend = exp.end();
 	for(auto it = exp.begin(); it!=exp.end(); it++){
 		if(it->tokenType == "whitespace")
@@ -97,6 +102,7 @@ void trim(std::vector<token>& exp){
 	
 }
 std::vector<token> tokenize(std::string s){
+
 	std::vector<token> tokenizedStr;
 	for(auto it = s.begin(); it!=s.end(); ++it){
 		if(*it == '('){
@@ -130,12 +136,13 @@ std::vector<token> tokenize(std::string s){
 			token t{.tokenType = "symbolId", .tokenText=s};
 			tokenizedStr.push_back(t);
 		} else{
-			std::cout<<"Unrecognized Token"<<std::endl;
+			throw std::runtime_error("Invalid Token");
 		}
 	}
 	return tokenizedStr; 
 }
 std::vector<token> findCarAndCdr(std::vector<token>& exp){
+
 	exp.erase(exp.begin());
 	exp.erase(exp.end()-1);
 
@@ -143,11 +150,11 @@ std::vector<token> findCarAndCdr(std::vector<token>& exp){
 	trim(exp);
 	
 	if(exp[0].tokenType == "rParen" || exp[0].tokenType == "dot") {
-		std::cout<<"Invalid Token"<<std::endl;
+		throw std::runtime_error("Invalid Token");
 	} else if(exp[0].tokenType == "int" || exp[0].tokenType == "symbolId"){
 		car.push_back(exp[0]);
 		exp.erase(exp.begin());		
-	} else if(exp[0].tokenType == "lParen"){
+	} else if(exp[0].tokenType == "lParen" && exp.size() > 1){
 		auto end = exp.begin() + 1;
 		int level = 0;
 		for(auto it = exp.begin(); it != exp.end(); it++){
@@ -163,6 +170,8 @@ std::vector<token> findCarAndCdr(std::vector<token>& exp){
 		}
 		car = std::vector<token>(exp.begin(), end+1);
 		exp.erase(exp.begin(), end+1);
+	} else {
+		throw std::runtime_error("Invalid Token");
 	}
 	//std::cout<<"CAR"<<std::endl;
 	//print(car);
@@ -176,11 +185,11 @@ std::vector<token> findCarAndCdr(std::vector<token>& exp){
 			trim(cdr);
 		} else
 			cdr = std::vector<token>(exp.begin(), exp.end());
-	} else if(exp[0].tokenType == "dot"){
+	} else if(exp[0].tokenType == "dot" && exp.size() > 1){
 		cdr = std::vector<token>(exp.begin()+1, exp.end());
 		trim(cdr);
 	} else
-		std::cout<<"error1"<<std::endl;
+		throw std::runtime_error("Invalid end to S-Expression");
 	//std::cout<<"CDR"<<std::endl;
 	//print(cdr);
 
@@ -191,8 +200,9 @@ SExp* convertList(std::vector<token> exp){
 	trim(exp);
 	SExp *e = new SExp;
 	e->type = 3;
+
 	if(exp.size() > 1){
-		if(isAtom(exp[0])) {		
+		if(isAtom(exp[0]) && exp[1].tokenType == "whitespace") {
 			e->left = convertToInternalRep(std::vector<token>(exp.begin(), exp.begin()+1));
 			e->right = convertList(std::vector<token>(exp.begin()+1, exp.end()));
 		} else if(exp[0].tokenType == "lParen"){
@@ -210,51 +220,78 @@ SExp* convertList(std::vector<token> exp){
 				}	
 			}
 			if(rp == exp.begin()){
-				std::cout<<"error2"<<std::endl;
+				throw std::runtime_error("");
 			} else if(rp+1 == exp.end()){
-				SExp *nil = new SExp;
-				nil->type = 2;
-				nil->name = "NIL";
+				if(e->usedIds.find("NIL") != e->usedIds.end()){
+					e->right = e->usedIds["NIL"];
+				} else {
+					SExp *nil = new SExp;
+					nil->type = 2;
+					nil->name = "NIL";
+					e->right = nil;
+					e->usedIds["NIL"] = nil;
+				}
 				e->left = convertToInternalRep(std::vector<token>(exp.begin(), rp+1));
-				e->right = nil;
 			} else {
 				e->left = convertToInternalRep(std::vector<token>(exp.begin(), rp+1));
 				e->right = convertList(std::vector<token>(rp+1, exp.end()));
 			}	
 		} else {	
-			std::cout<<"error3"<<std::endl;
-			print(exp);
+			delete e;
+			throw std::runtime_error("Invalid start to S-expression");
 		}
 	} else if(isAtom(exp[0])) {
-		SExp *nil = new SExp;
-		nil->type = 2;
-		nil->name = "NIL";
-		
+		if(e->usedIds.find("NIL") != e->usedIds.end()){
+			e->right = e->usedIds["NIL"];
+		} else {
+			SExp *nil = new SExp;
+			nil->type = 2;
+			nil->name = "NIL";
+			e->right = nil;
+			e->usedIds["NIL"] = nil;
+		}
 		e->left = convertToInternalRep(std::vector<token>(exp.begin(), exp.begin()+1));
-		e->right = nil;
+	} else {
+		throw std::runtime_error("Invalid Token");
+		delete e;
 	}
 	return e;
 }
 SExp* convertToInternalRep(std::vector<token> exp){
 	SExp *e = new SExp;
 	trim(exp);
-	if(exp.size() == 1){
+	if(exp.size() == 0){
+		throw std::runtime_error("empty expression");
+	} else if(exp.size() == 1){
 		if(exp[0].tokenType == "int"){
 			e->type = 1;
 			e->val = std::stoi(exp[0].tokenText);
 			return e;
 		} else if(exp[0].tokenType == "symbolId"){
-			e->type = 2;
-			e->name = exp[0].tokenText;
+			if(e->usedIds.find(exp[0].tokenText) != e->usedIds.end()){
+				SExp *ret = e->usedIds[exp[0].tokenText];
+				delete e;
+				return ret;
+			} else {
+				e->type = 2;
+				e->name = exp[0].tokenText;
+				e->usedIds[exp[0].tokenText] = e;
+			}
 			return e;
+		} else {
+			throw std::runtime_error("Invalid Token");
 		}
 	} else if(exp[0].tokenType == "lParen" && exp[exp.size()-1].tokenType == "rParen"){
 		//find null list
 		if(exp.size() == 2 || (exp.size() == 3 && exp[1].tokenType == "whitespace")){ 
-			e->type = 2;
-			e->name = "NIL";
+			if(e->usedIds.find("NIL") != e->usedIds.end()){
+				e = e->usedIds["NIL"];
+			} else {
+				e->type = 2;
+				e->name = "NIL";
+				e->usedIds["NIL"] = e;
+			}
 		} else {
-
 			std::vector<token> car = findCarAndCdr(exp);		
 			std::vector<token> cdr = exp;
 
@@ -268,22 +305,32 @@ SExp* convertToInternalRep(std::vector<token> exp){
 		}
 		return e;
 	} else {
-		std::cout<<"error 4"<<std::endl;
-		print(exp);
+		throw std::runtime_error("Invalid Token");
 		return e;
 	}
+
 	return e;
 }
 int main(){
 	std::vector<std::string> s = readInput();
 	std::vector<std::vector<token>> tokenizedExprs;
 	for(auto exp : s){
-		tokenizedExprs.push_back(tokenize(exp));
+		try{
+			tokenizedExprs.push_back(tokenize(exp));
+		} catch(std::exception e){
+			std::cerr<<"Exception: "<<e.what()<<std::endl;
+		}
 	}
 	
 	for(auto exp : tokenizedExprs){
-		SExp* e = convertToInternalRep(exp);
-		findCarAndCdr(exp);
-		print(e);
+		//print(exp);
+		try{
+			SExp* e = convertToInternalRep(exp);
+			print(e);
+			std::cout<<std::endl;
+		} catch(std::runtime_error e){
+			std::cerr<<"Exception: "<<e.what()<<std::endl;
+		}
 	}
+	//std::cout<<std::endl;
 }
