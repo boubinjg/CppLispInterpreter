@@ -1,0 +1,124 @@
+Interpreter design:
+	Language:
+		I chose to use C++11 for this interpreter. 
+
+	Main function:
+		The main function reads the input from std::cin and returns it as a string. the string is then 
+		tokenized and returned as a vector of vectors of tokens (split by $), and then each individual
+		vector of tokens corresponding to a separate lisp expression is converted to internal representation
+		as a single S-expression, and printed. Both tokenization and conversion can generate errors, so
+		the tokenization step and conversion/print step in the main contain error handling logic which
+		allows them to print the error and continue onto the next s-expression.
+
+
+	Classes:
+		The interpreter has two structs, token and SExp. 
+		Token:
+			Token is an aggregate struct that contains two strings, tokenType, and tokenText.
+			
+			tokenType is the type of token, which can be one of the following:
+				"whitespace", "lParen", "rParen", "int", "symbolId", "dot"
+			Notice, that "$", and "$$", are valid symbols. These are used by the tokenizer to
+			separate s-expressions, and are not needed for evaluation so I got rid of them.
+			
+			tokenText is the text that generated that token. for instance, "1" will have a token
+			type of "int", and a tokenText of "1". This is so the token can know and write it's 
+			generating string. Only symbolid and int actually use this.
+
+		SExp:
+			This class is very similar to the version presented in class. It has an int type, 
+			int val, string name, and SExp* left and right. Type {1,2,3} denotes the type of the 
+			expression, 1 for int, 2 for symbolId, and 3 for SExp. Then the appropriate variables
+			are used to hold the contents of that s-expression, be it an integer, string, or 
+			two SExp*'s representing the car and cdr of the s-expression.
+			SExp also has an unordered_map which holds SExp*'s uniquely identified by symbolId names.
+			This allows us to hold known name and their SExp*s for use in the conversion function.
+
+	Reading input:
+		The interpreter first waits for input using std::cin. It reads input line by line separated by 
+		newline characters until it sees a "$$", at which point, it stops reading input and disregards any
+		input beyond the $$. The string is then split by "$", and each string is put into a vector.This 
+		function returns a vector of strings, each string corresponding to a lisp expression.
+
+	Tokenizer:
+		Once input is read and returned as a string, Each expression is then searched for identifiers of 
+		tokens. The tokenizer uses a vector to record the string of tokens. The function iterates over the 
+		string lisp expression and finds tokens as below:
+		
+		'(', ')', '.': 
+			If any of these are found, the appropriate token is added to the back of the tokenizedStr 
+			vector with generic tokenText. 
+		
+		ints, strings, whitespace:
+			If a character is found to be a digit, a token of type int is created. The tokenizer
+			continues to iterate along the string until it sees a non-digit. It sets the tokenText
+			to the value of the entire int, from the first char of the int to the iterator's end
+			position, then moves on to the next token.
+			SymbolIds work similarly. If a character is found to be a letter, a procedure much like int
+			initiates. The only difference is that (as mentioned in class) symbolIds can contain alpha-
+			numeric characters, but must start with a letter. The iterator iterates along the string
+			until it finds a character that's not alphanumeric, then sets the tokenText to the entire
+			token's value.
+			Whitespace uses the same procedure, and uses the cctype function isspace to capture tabs,
+			linefeeds, spaces, and more in one function call.
+
+		The tokenizer is run on each string from the read input routine's vector, and pushes each token
+		vector onto a vector of tokenVectors called tokenizedExprs, which is fed to the routine
+		which converts the token vectors to the internal representation
+
+	Convert to internal representation:
+		When the conversion function is called, a new SExp is created. The function checks to see
+		whether the token is an int, symbolId, or SExpression. For an int or symbolId, a simple
+		SExp of tha type is created and returned. for symbolIds, the symbolname is checked against
+		all existing symbolNames. If the symbol name exists, the extant version is returned instead of
+		creating a new one. If it doesn't exist, the function creates a new one and returns that, adding
+		it also to the internal hash table in SExp which holds the symbolId's corresponding SExps.
+
+		If the token vector is an s-expression, an s-expression of type 3 is created. the conversion function
+		sends the token vector to findCarAndCdr, which returns the car and cdr of the s-expression, and each
+		of those are added to the new SExp's corresponding variables. If the cdr of the s-expression starts
+		with a whitespace character (which would have been trimmed off of the front/back of the s-exp before 
+		evaluation in other circumstances), then we know that the s-expression is a list. under normal 
+		circumstances, the SExp*'s right and left are just set by a recursive call to the conversion function,
+		but if it's a list, then the car is set by a recursive call, and the cdr is set by a different
+		function specifically for lists.
+
+	convert to List:
+		Convert to list takes a vector of tokens and converts it to list notation. it first checks to see
+		if the vector of strings starts with "atom, whitespace" as its first two characters. If so, the atom
+		is added to the right side of the s-expression returned by this function, and the right side is
+		created by a recursive call with the recent atom removed from the vector.
+		If the vector starts with an l-paren, then it is an s-expression. The function pulls the entire
+		s-expression into it's own vector, and evaluates it using the normal conversion function. If it's
+		a list, the conversion function will send it back to the list conversion function lower down the call
+		stack. If not, it will be evaluated normally. This allows for a mix of list and normal notation to be
+		used throughout the lisp expression. 
+		
+	Errors:
+		If anything ourside of the ordiary occurs in any of these functions, including tokenization,
+		an error can be thrown. Errors are handled by the main function. If an error occurs durring
+		tokenization, the string being tokenized is ignored, and the next string is tokenized.
+		If an error occurs durring conversion, the vector of tokens is ignored, and the next vector
+		is converted. Either way, an error is printed. 
+
+	Print:
+		The print function is run after an SExp is created and returned by the conversion function. An 
+		SExp* is read in, and it's type is checked. If it is of type 1 or 2, it's name is printed. If it's
+		of type 3, an lParen is prined, then e->left is sent recursively to the print function. After that 
+		a . is printed, then e->right is sent recursively to the print function, and finally an rParen is 
+		printed.  
+			
+	Utility functions:
+		Trim:
+			A function that accepts a vector of tokens and removes leading and trailing whitespace
+
+		isAtom:
+			A function that takes a token and returns whether or not it is atomic
+
+		print, for tokens:
+			Prints a vector of tokens, useful for debugging.
+
+	Other notes:
+		This interpreter reads empty expressions as errors. For instance, expressions with just whitespace
+		or with no space at all are considered errors. This is mainly because I do not know how this
+		falls in the lisp language. If this is incorrect, let me know.

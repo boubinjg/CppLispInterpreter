@@ -314,21 +314,11 @@ int main(){
 	std::vector<std::vector<token>> tokenizedExprs;
 	for(auto exp : s){
 		try{
-			tokenizedExprs.push_back(tokenize(exp));
+			SExp* e = convertToInternalRep(tokenize(exp));
+			print(e);
+			std::cout<<std::endl;
 		} catch(std::exception e){
 			std::cerr<<"Exception: "<<e.what()<<std::endl;
 		}
 	}
-	
-	for(auto exp : tokenizedExprs){
-		//print(exp);
-		try{
-			SExp* e = convertToInternalRep(exp);
-			print(e);
-			std::cout<<std::endl;
-		} catch(std::runtime_error e){
-			std::cerr<<"Exception: "<<e.what()<<std::endl;
-		}
-	}
-	//std::cout<<std::endl;
 }

@@ -1,0 +1,20 @@
+Compile:
+	To compile the interpreter lisp.cpp, you can simply run the make fule using the command "make". If this for so
+	me reason donesn't work, you can compile it using g++ using the c++11 standard:
+	"g++ -std=c++11 lisp.cpp"
+
+Run:
+	The makefile creates an executable called "lisp". You can run this using the command "./lisp".
+	The interpreter expects inputs from std::cin. It will accept a series of lisp expressions separated by
+	the '$' character, with the last lisp expression ending in "$$". Once you type the $$ character and hit 
+	enter, the interpreter will run on all of the lisp expressions and return them in standard notation. Any 
+	spaces or standard lisp characters are accepted by the interpreter. New lines and tabs can be used to 
+	separate lists. If a lisp expression is invalid, an error will be printed instead of it's standard notation.
+	After the error is printed, the next s-expression is read and printed.
+
+	When I run this, I use the command below:
+	"cat tests.txt | ./lisp"
+	Basically, I have a file named tests.txt which contains a series of lisp expressions of the form above. 
+	I cat this, printing it to some output point, and pipe that to ./lisp, so the lisp program accepts the file
+	as input. This is my suggested form of input, but you can also enter the tests manually, or copy-paste. 
+	
