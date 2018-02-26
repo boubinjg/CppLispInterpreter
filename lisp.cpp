@@ -38,8 +38,8 @@ void print(SExp* e){
 	}
 }
 void print(std::vector<token> exp){
-	for(auto it = exp.begin(); it != exp.end(), it++){
-		std::cout<<i->tokenType<<" "<<i->tokenText<<std::endl;
+	for(auto it = exp.begin(); it != exp.end(); it++){
+		std::cout<<it->tokenType<<" "<<it->tokenText<<std::endl;
 	}
 }
 std::vector<std::string> readInput(){
@@ -49,13 +49,13 @@ std::vector<std::string> readInput(){
 	bool finished = false;
 	std::string s;
 	while(!finished && std::getline(std::cin, s)){
-		for(char cur : s){
+		for(auto cur = s.begin(); cur!=s.end(); cur++){
 			if(exps.length() > 0 && 
-		   	   cur == '$' && exps[exps.length()-1] == '$'){
+		   	   *cur == '$' && exps[exps.length()-1] == '$'){
 				finished = true;
 				break;
 			   }
-			exps += cur;
+			exps += *cur;
 		}
 		exps += "\n";
 	}
