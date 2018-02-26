@@ -179,7 +179,7 @@ std::vector<token> findCarAndCdr(std::vector<token>& exp){
 	//print(car);
 	
 	if(exp.size() == 0){
-		token t{.tokenType = "symbolId", .tokenText="NIL"};
+		token t("symbolId", "NIL");
 		cdr.push_back(t);
 	} else if(exp[0].tokenType == "whitespace"){
 		if(exp[1].tokenType == "dot") {
@@ -316,9 +316,9 @@ SExp* convertToInternalRep(std::vector<token> exp){
 int main(){
 	std::vector<std::string> s = readInput();
 	std::vector<std::vector<token>> tokenizedExprs;
-	for(auto exp : s){
+	for(auto exp = s.begin(); exp != s.end(); exp++){
 		try{
-			SExp* e = convertToInternalRep(tokenize(exp));
+			SExp* e = convertToInternalRep(tokenize(*exp));
 			print(e);
 			std::cout<<std::endl;
 		} catch(std::exception e){
