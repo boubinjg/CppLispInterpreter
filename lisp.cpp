@@ -38,8 +38,8 @@ void print(SExp* e){
 	}
 }
 void print(std::vector<token> exp){
-	for(auto i : exp){
-		std::cout<<i.tokenType<<" "<<i.tokenText<<std::endl;
+	for(auto it = exp.begin(); it != exp.end(), it++){
+		std::cout<<i->tokenType<<" "<<i->tokenText<<std::endl;
 	}
 }
 std::vector<std::string> readInput(){
