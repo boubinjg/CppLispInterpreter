@@ -1,7 +1,8 @@
 Compile:
 	To compile the interpreter lisp.cpp, you can simply run the make fule using the command "make". If this for so
 	me reason donesn't work, you can compile it using g++ using the c++11 standard:
-	"g++ -std=c++11 lisp.cpp"
+	"g++ -std=c++0x lisp.cpp"
+	Apparently, stdlinux doesn't support c++11 or higher...
 
 Run:
 	The makefile creates an executable called "lisp". You can run this using the command "./lisp".

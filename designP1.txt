@@ -1,6 +1,7 @@
 Interpreter design:
 	Language:
-		I chose to use C++11 for this interpreter. 
+		I chose to use C++11 for this interpreter. Unfortunately, c++11 isn't supported by stdlinux, so 
+		c++0x it is.
 
 	Main function:
 		The main function reads the input from std::cin and returns it as a string. the string is then 
