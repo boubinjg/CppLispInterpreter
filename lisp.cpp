@@ -9,6 +9,10 @@ struct token{
 	//rParen, lParen, dollar, symbolID, integer, whitespace
 	std::string tokenType;
 	std::string tokenText;
+	token(std::string toktype, std::string toktext){
+		tokenType = toktype;
+		tokenText = toktext;
+	}
 };
 
 struct SExp{
@@ -105,25 +109,25 @@ std::vector<token> tokenize(std::string s){
 	std::vector<token> tokenizedStr;
 	for(auto it = s.begin(); it!=s.end(); ++it){
 		if(*it == '('){
-			token t{.tokenType = "lParen", .tokenText="("};
+			token t("lParen", "(");
 			tokenizedStr.push_back(t);
 		} else if(*it == ')'){
-			token t{.tokenType = "rParen", .tokenText=")"};
+			token t("rParen",")");
 			tokenizedStr.push_back(t);
 		} else if(isspace(*it)){
-			token t{.tokenType = "whitespace", .tokenText=" "};
+			token t("whitespace"," ");
 			tokenizedStr.push_back(t);
 			for(auto itt = it; it != s.end() && isspace(*itt); itt++)
 				it = itt;
 		} else if(*it == '.'){
-			token t{.tokenType = "dot", .tokenText="."};
+			token t("dot", ".");
 			tokenizedStr.push_back(t);	
 		} else if(isdigit(*it)){
 			auto beg = it;
 			for(auto itt = it; it != s.end() && isdigit(*itt); itt++)
 				it = itt;
 			std::string s(beg, it+1);
-			token t{.tokenType = "int", .tokenText=s};
+			token t("int",s);
 			tokenizedStr.push_back(t);
 		} else if(isalpha(*it)){
 			auto beg = it;
@@ -131,7 +135,7 @@ std::vector<token> tokenize(std::string s){
 			for(auto itt = it; it != s.end() && isalnum(*itt); itt++)
 				it = itt;
 			std::string s(beg, it+1);
-			token t{.tokenType = "symbolId", .tokenText=s};
+			token t("symbolId", s);
 			tokenizedStr.push_back(t);
 		} else{
 			throw std::runtime_error("Invalid Token");
