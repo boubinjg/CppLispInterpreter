@@ -257,7 +257,7 @@ SExp* convertToInternalRep(std::vector<token> exp){
 	trim(exp);
 	if(exp.size() == 0){
 		//throw std::runtime_error("empty expression");
-		return nullptr;
+		return NULL;
 	} else if(exp.size() == 1){
 		if(exp[0].tokenType == "int"){
 			e->type = 1;
