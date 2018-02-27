@@ -9,7 +9,7 @@ struct token{
 	//rParen, lParen, dollar, symbolID, integer, whitespace
 	std::string tokenType;
 	std::string tokenText;
-	token(std::string toktype, std::string toktext){
+	token(std::string toktype, std::string toktext) {
 		tokenType = toktype;
 		tokenText = toktext;
 	}
@@ -29,7 +29,9 @@ SExp* convertToInternalRep(std::vector<token> exp);
 //read std::cin until $$ is encountered
 //then split by $ into a vector
 void print(SExp* e){
-	if(e->type == 3){
+    if(e == nullptr){
+        return;
+    } else if(e->type == 3){
 		std::cout<<"(";
 		print(e->left);
 		std::cout<<".";
@@ -46,33 +48,24 @@ void print(std::vector<token> exp){
 		std::cout<<it->tokenType<<" "<<it->tokenText<<std::endl;
 	}
 }
-std::vector<std::string> readInput(){
-	std::string exps;
-	std::vector<std::string> expAsStr;
-	
-	bool finished = false;
-	std::string s;
-	while(!finished && std::getline(std::cin, s)){
-		for(auto cur = s.begin(); cur!=s.end(); cur++){
-			if(exps.length() > 0 && 
-		   	   *cur == '$' && exps[exps.length()-1] == '$'){
-				finished = true;
-				break;
-			   }
-			exps += *cur;
-		}
-		exps += "\n";
-	}
-	
-	size_t pos = 0;
-	std::string token;
-	while ((pos = exps.find("$")) != std::string::npos) {
-    		token = exps.substr(0, pos);
-    		expAsStr.push_back(token);
-    		exps.erase(0, pos + 1);
-	}
-	
-	return expAsStr;
+bool readInput(std::string& s){
+    bool finished = false;
+    std::string nl;
+    while(true){
+        std::getline(std::cin, nl);
+        if(nl == "$"){
+            //std::cout<<"dollar"<<std::endl;
+            break;
+        } else if(nl == "$$"){
+            //std::cout<<"2dollar"<<std::endl;
+            finished = true;
+            break;
+        } else {
+            //std::cout<<"Else: "+nl<<std::endl;
+            s += nl+"\n";
+        }
+    }
+    return finished;
 }
 bool isAtom(token t){
 	return (t.tokenType == "int" || t.tokenType == "symbolId");
@@ -263,7 +256,8 @@ SExp* convertToInternalRep(std::vector<token> exp){
 	SExp *e = new SExp;
 	trim(exp);
 	if(exp.size() == 0){
-		throw std::runtime_error("empty expression");
+		//throw std::runtime_error("empty expression");
+		return nullptr;
 	} else if(exp.size() == 1){
 		if(exp[0].tokenType == "int"){
 			e->type = 1;
@@ -314,15 +308,16 @@ SExp* convertToInternalRep(std::vector<token> exp){
 	return e;
 }
 int main(){
-	std::vector<std::string> s = readInput();
-	std::vector<std::vector<token>> tokenizedExprs;
-	for(auto exp = s.begin(); exp != s.end(); exp++){
-		try{
-			SExp* e = convertToInternalRep(tokenize(*exp));
-			print(e);
-			std::cout<<std::endl;
-		} catch(std::exception e){
-			std::cerr<<"Exception: "<<e.what()<<std::endl;
-		}
+	bool end;
+	while(!end){
+	    std::string s;
+	    end = readInput(s);
+        try{
+            SExp* e = convertToInternalRep(tokenize(s));
+            print(e);
+            std::cout<<std::endl;
+        } catch(std::runtime_error e){
+            std::cerr<<"Exception: "<<e.what()<<std::endl;
+        }
 	}
 }
