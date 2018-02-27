@@ -48,7 +48,7 @@ void print(std::vector<token> exp){
 		std::cout<<it->tokenType<<" "<<it->tokenText<<std::endl;
 	}
 }
-bool readInput(std::string& s){
+bool read(std::string& s){
     bool finished = false;
     std::string nl;
     while(true){
@@ -125,8 +125,10 @@ std::vector<token> tokenize(std::string s){
 		} else if(isalpha(*it)){
 			auto beg = it;
 			//allows for alphanumeric symbolic IDs as long as they start with a letter
-			for(auto itt = it; it != s.end() && isalnum(*itt); itt++)
+			for(auto itt = it; it != s.end() && isalnum(*itt); itt++){
 				it = itt;
+				if (isalpha(*it)) {*itt = std::toupper(*itt);}
+			}
 			std::string s(beg, it+1);
 			token t("symbolId", s);
 			tokenizedStr.push_back(t);
@@ -311,7 +313,7 @@ int main(){
 	bool end = false;
 	while(!end){
 	    std::string s;
-	    end = readInput(s);
+	    end = read(s);
         try{
             SExp* e = convertToInternalRep(tokenize(s));
             print(e);
