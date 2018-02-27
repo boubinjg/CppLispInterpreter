@@ -308,7 +308,7 @@ SExp* convertToInternalRep(std::vector<token> exp){
 	return e;
 }
 int main(){
-	bool end;
+	bool end = false;
 	while(!end){
 	    std::string s;
 	    end = readInput(s);
