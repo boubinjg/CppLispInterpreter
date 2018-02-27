@@ -29,7 +29,7 @@ SExp* convertToInternalRep(std::vector<token> exp);
 //read std::cin until $$ is encountered
 //then split by $ into a vector
 void print(SExp* e){
-    if(e == nullptr){
+    if(e == NULL){ /*c++0x..."*/
         return;
     } else if(e->type == 3){
 		std::cout<<"(";
