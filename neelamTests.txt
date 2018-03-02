@@ -1,0 +1,33 @@
+(2. (3 4))
+$
+(2 . (3 4) .5)
+$
+(2 . ((3 4) . 5))
+$
+(2 . (3 4) $ 5)
+$
+(2 (3 . 4) (5 . 6))
+$
+(CAR (QUOTE (A . B)))
+$
+(cons 4 (quote (a . b)))
+$
+(cons 4 (a . b))
+$
+(DEFUL silly (a b) (plus a b))
+$
+(silly 5 6)
+$
+(silly (car (quote (5.6))) (cdr (quote (5.6))) )
+$
+(defun minus2 (a b) (minus a b))
+$
+(DEFUN NOTSOSILLY (A B)
+    (COND
+        ((EQ A 0) (PLUS B 1))
+        ((EQ B 0) (NOTSOSILLY (MINUS2 A 1) 1))
+        (T (NOTSOSILLY (MINUS2 A 1) (NOTSOSILLY A (MINUS2 B 1))))
+                                                                ))
+$
+(NOTSOSILLY 0 0)
+$$

@@ -101,28 +101,46 @@ std::vector<token> tokenize(std::string s){
 
 	std::vector<token> tokenizedStr;
 	for(auto it = s.begin(); it!=s.end(); ++it){
-		if(*it == '('){
+		if(*it == '(') {
 			token t("lParen", "(");
 			tokenizedStr.push_back(t);
-		} else if(*it == ')'){
+		} else if(*it == ')') {
 			token t("rParen",")");
 			tokenizedStr.push_back(t);
-		} else if(isspace(*it)){
+		} else if(isspace(*it)) {
 			token t("whitespace"," ");
 			tokenizedStr.push_back(t);
 			for(auto itt = it; it != s.end() && isspace(*itt); itt++)
 				it = itt;
-		} else if(*it == '.'){
+		} else if(*it == '.') {
 			token t("dot", ".");
 			tokenizedStr.push_back(t);	
-		} else if(isdigit(*it)){
+		} else if(isdigit(*it)) {
 			auto beg = it;
 			for(auto itt = it; it != s.end() && isdigit(*itt); itt++)
 				it = itt;
 			std::string s(beg, it+1);
 			token t("int",s);
 			tokenizedStr.push_back(t);
-		} else if(isalpha(*it)){
+		} else if(*it == '+') { 
+	        auto beg = it+1;
+		    for(auto itt = beg; it != s.end() && isdigit(*itt); itt++)
+		        it = itt;
+		    if(it == beg-1)
+		        throw std::runtime_error("invalid '+' token placement");
+            std::string s(beg, it+1);
+            token t("int", s);
+            tokenizedStr.push_back(t);
+        } else if(*it == '-') {
+            auto beg = it;
+		    for(auto itt = beg+1; it != s.end() && isdigit(*itt); itt++)
+		        it = itt;
+		    if(beg == it)  
+		        throw std::runtime_error("Invalid '-' token placement");
+            std::string s(beg, it+1);
+            token t("int", s);
+            tokenizedStr.push_back(t);
+        } else if(isalpha(*it)) {
 			auto beg = it;
 			//allows for alphanumeric symbolic IDs as long as they start with a letter
 			for(auto itt = it; it != s.end() && isalnum(*itt); itt++){
@@ -132,8 +150,8 @@ std::vector<token> tokenize(std::string s){
 			std::string s(beg, it+1);
 			token t("symbolId", s);
 			tokenizedStr.push_back(t);
-		} else{
-			throw std::runtime_error("Invalid Token");
+		} else {
+			throw std::runtime_error("Invalid Token: "+(*it));
 		}
 	}
 	return tokenizedStr; 
