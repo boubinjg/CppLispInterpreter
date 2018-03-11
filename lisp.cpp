@@ -307,6 +307,10 @@ SExp* convertToInternalRep(std::vector<token> exp){
 
 	return e;
 }
+void bindDlist(SExp* arg){
+    SExp* dl = new SExp(arg, dlist);
+    dlist = dl;
+}
 //places variable at top of Alist
 void bind(SExp*& alist, std::string name, SExp* arg){
     SExp* argName = new SExp(name);
@@ -340,8 +344,8 @@ SExp* eval(SExp* e, SExp* alist){
         SExp* als = alist;
         if(usedIds.find(e->name) != usedIds.end())
             return usedIds[e->name];
-        while(als != usedIds["NIL"]){
-            if(als->left->name == e->name){
+        while(als != usedIds["NIL"]) {
+            if(als->left->name == e->name) {
                 return als->right;
             }
             als = als->right;
@@ -451,9 +455,19 @@ SExp* eval(SExp* e, SExp* alist){
             std::cout<<"done bind"<<std::endl;
             return cond(e, alist, argcount);
         } else if(e->left->name == "DEFUN"){
+            std::cout<<"IN DEFUN"<<std::endl;
+            if(argCt(e) != 3)
+                throw std::runtime_error("Wrong Number of arguments: DEFUN");
             
-        }
-        
+            //DEF->left = e->right->left;
+            SExp* params = new SExp(e->right->right->left,
+                            e->right->right->right->left); 
+            SExp* def = new SExp(e->right->left, params);
+            if(e->right->left->type != 2)
+                throw std::runtime_error("DEFUN: First arg is not a function name");
+            bindDlist(def);   
+            return find(e->right->left->name, dlist);
+        } 
         throw std::runtime_error("Not a Lisp Expression");
     }
     throw std::runtime_error("Invalid Lisp Expression");
@@ -468,7 +482,8 @@ int main(){
 	T->type = 2;
 	T->name = "T";
 	usedIds["T"] = T;
-    
+    dlist = NIL;
+
     while(!end){
 	    std::string s;
 	    end = read(s);

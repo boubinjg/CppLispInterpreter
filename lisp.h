@@ -39,6 +39,7 @@ struct SExp{
 SExp* convertList(std::vector<token> exp);
 SExp* convertToInternalRep(std::vector<token> exp);
 std::unordered_map<std::string, SExp*> usedIds;
+SExp* dlist;
 
 void output(SExp* e);
 void print(std::vector<token> exp);
