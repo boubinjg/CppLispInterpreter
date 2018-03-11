@@ -176,5 +176,21 @@ SExp* quote(SExp* e, SExp* alist){
     SExp* q = find("QUOTE", alist);
     return q;
 }
+SExp* cond(SExp* e, SExp* alist, size_t argcount) {
+    std::vector<SExp*> bools, exps;
+    for(size_t i = 0; i<argcount; i++) {
+            bools.push_back(
+                find("CONDB"+std::to_string(i),alist));
+            exps.push_back(
+                find("CONDE"+std::to_string(i),alist));
+    }
+    for(auto it=bools.begin(); it!=bools.end(); it++){
+        if(eval(*it, alist) == usedIds["T"]){
+            return eval(exps[it-bools.begin()], alist);
+        } else if(eval(*it, alist) != usedIds["NIL"])
+          throw std::runtime_error("COND: Expression was non-boolean");  
+    }
+    throw std::runtime_error("COND: No Boolean Expression Evaluated To True");
+}
 
 

@@ -111,4 +111,10 @@ $
 (LESS 18 18)
 $
 (GREATER 18 18)
+$
+(COND (NIL NIL) (T T) )
+$
+(COND (NIL 7) ((INT T) 8) ((EQ 5 (MINUS 2 3)) 4) ((EQ 7 (PLUS 3 4)) 7) ((EQ 5 (PLUS 2 3)) 5) )
+$
+(COND (NIL 7) ((INT T) 8) ((EQ 5 (MINUS 2 3)) 4) ((EQ 7 (PLUS 3 4)) (PLUS 5 20)) ((EQ 5 (PLUS 2 3)) 5) )
 $$

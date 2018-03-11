@@ -434,10 +434,26 @@ SExp* eval(SExp* e, SExp* alist){
                 throw std::runtime_error("Wrong Number of arguments: QUOTE");
             bind(alist, "QUOTE", e->right);
             return quote(e, alist);
+        } else if(e->left->name == "COND"){
+            size_t argcount = argCt(e);
+            if(argcount == 0)
+                throw std::runtime_error("Wrong Number of arguments: COND");
+            SExp* sto = e;
+            for(size_t i = 0; i<argcount; i++){
+                if(argCt(sto->right->left) != 1)
+                    throw std::runtime_error("Wrong Number of arguments: COND");
+                bind(alist, "CONDB" + std::to_string(i),  
+                     sto->right->left);
+                bind(alist, "CONDE" + std::to_string(i),
+                     sto->right->left->right);
+                sto = sto->right;
+            }
+            std::cout<<"done bind"<<std::endl;
+            return cond(e, alist, argcount);
+        } else if(e->left->name == "DEFUN"){
+            
         }
-        //_________________
-        //cond
-        //defun
+        
         throw std::runtime_error("Not a Lisp Expression");
     }
     throw std::runtime_error("Invalid Lisp Expression");
