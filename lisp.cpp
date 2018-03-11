@@ -324,6 +324,14 @@ SExp* find(std::string name, SExp* alist){
     }
     throw std::runtime_error("arg not on Alist");
 }
+size_t argCt(SExp* e){
+    size_t ret = 0;
+    while(e->right!=usedIds["NIL"]){
+        e = e->right;
+        ++ret;
+    }
+    return ret;
+}
 SExp* eval(SExp* e, SExp* alist){
     if(e->type == 1)
         return e;
@@ -343,61 +351,90 @@ SExp* eval(SExp* e, SExp* alist){
     else if(e->type == 3){
         //function application
         if(e->left->name == "CAR") {
+            if(argCt(e) != 1)
+                throw std::runtime_error("Wrong number of argumants: CAR");
             bind(alist, "CARA", e->right);
             return car(e->right, alist);
         } else if(e->left->name == "CDR") {
+             if(argCt(e) != 1)
+                throw std::runtime_error("Wrong number of arguments: CDR");
             bind(alist, "CDRA", e->right);
             return cdr(e->right, alist);
         } else if(e->left->name == "CONS") {
+            if(argCt(e) != 2)
+                throw std::runtime_error("Wrong Number of arguments: CONS");
             bind(alist, "CONSA", e->right);
             bind(alist, "CONSB", e->right->right);
             return cons(e, alist);
         } else if(e->left->name == "ATOM"){
+            if(argCt(e) != 1)
+                throw std::runtime_error("Wrong Number of arguments: ATOM");
             bind(alist, "ATOMA", e->right);
             return atom(e, alist);
         } else if(e->left->name == "EQ"){
+            if(argCt(e) != 2)
+                throw std::runtime_error("Wrong Number of arguments: EQ");
             bind(alist, "EQA", e->right);
             bind(alist, "EQB", e->right->right);
             return eq(e, alist);
         } else if(e->left->name == "NULL"){
+            if(argCt(e) != 1)
+                throw std::runtime_error("Wrong Number of arguments: NULL");
             bind(alist, "NULL", e->right);
             return null(e, alist);
         } else if(e->left->name == "INT"){
+            if(argCt(e) != 1)
+                throw std::runtime_error("Wrong Number of arguments: INT");
             bind(alist, "INTA", e->right);
             return intF(e, alist);
         } else if(e->left->name == "PLUS"){
+            if(argCt(e) != 2)
+                throw std::runtime_error("Wrong Number of arguments: PLUS");
             bind(alist, "PLUSA", e->right);
             bind(alist, "PLUSB", e->right->right);
             return plus(e, alist);
         } else if(e->left->name == "MINUS"){
+            if(argCt(e) != 2)
+                throw std::runtime_error("Wrong Number of arguments: MINUS");
             bind(alist, "MINA", e->right);
             bind(alist, "MINB", e->right->right);
             return minus(e, alist);
         } else if(e->left->name == "TIMES"){
+            if(argCt(e) != 2)
+                throw std::runtime_error("Wrong Number of arguments: TIMES");
             bind(alist, "TIMA", e->right);
             bind(alist, "TIMB", e->right->right);
             return times(e, alist);
         } else if(e->left->name == "QUOTIENT"){
+            if(argCt(e) != 2)
+                throw std::runtime_error("Wrong Number of arguments: QUOTIENT");
             bind(alist, "QUOA", e->right);
             bind(alist, "QUOB", e->right->right);
             return quotient(e, alist);
         } else if(e->left->name == "REMAINDER"){
+            if(argCt(e) != 2)
+                throw std::runtime_error("Wrong Number of arguments: REMAINDER");
             bind(alist, "REMA", e->right);
             bind(alist, "REMB", e->right->right);
             return remainder(e, alist);
         } else if(e->left->name == "LESS"){
+            if(argCt(e) != 2)
+                throw std::runtime_error("Wrong Number of arguments: LESS");
             bind(alist, "LESA", e->right);
             bind(alist, "LESB", e->right->right);
             return less(e, alist);
         } else if(e->left->name == "GREATER"){
+            if(argCt(e) != 2)
+                throw std::runtime_error("Wrong Number of arguments: GREATER");
             bind(alist, "GREA", e->right);
             bind(alist, "GREB", e->right->right);
             return greater(e, alist);
         } else if(e->left->name == "QUOTE"){
+            if(argCt(e) != 1)
+                throw std::runtime_error("Wrong Number of arguments: QUOTE");
             bind(alist, "QUOTE", e->right);
             return quote(e, alist);
         }
-        //quote
         //_________________
         //cond
         //defun
@@ -427,9 +464,11 @@ int main(){
             std::cout<<std::endl;
             
             //evaluate S expression
-            SExp* o = eval(e, NIL);
-            output(o);
-            std::cout<<std::endl;
+            if(e != NULL){
+                SExp* o = eval(e, NIL);
+                output(o);
+                std::cout<<std::endl;
+            }
 
         } catch(std::runtime_error e){
             std::cerr<<"Exception: "<<e.what()<<std::endl;
