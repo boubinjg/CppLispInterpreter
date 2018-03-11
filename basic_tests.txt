@@ -1,0 +1,114 @@
+1
+$
+-1
+$
++1
+$
+185
+$
+-185
+$
++185
+$
+()
+$
+(QUOTE 3)
+$
+(QUOTE (3))
+$
+(QUOTE (3.4))
+$
+(QUOTE ((3) 4 5))
+$
+(QUOTE ())
+$
+(CAR (QUOTE (3.4)))
+$
+(CDR (QUOTE (3.4)))
+$
+(CAR (QUOTE (3 (4 . 5))))
+$
+(CDR (QUOTE (3 (4 . 5))))
+$
+(CAR (QUOTE (1 2 3 4 5 6)))
+$
+(CDR (QUOTE (1 2 3 4 5 6)))
+$
+(CAR (CAR (QUOTE ((1.2) . 3))))
+$
+(CDR (CAR (QUOTE ((1.2) . 3))))
+$
+(CAR (CDR (CDR (CDR (CDR (QUOTE (1 2 3 4 5)))))))
+$
+(CDR (CDR (CDR (CDR (CDR (QUOTE (1 2 3 4 5)))))))
+$
+(CONS 1 2)
+$
+(CONS (QUOTE (1.2)) (QUOTE (3.4)))
+$
+(CONS (QUOTE (1 2 3)) (QUOTE (5.6)))
+$
+(ATOM T)
+$
+(ATOM NIL)
+$
+(ATOM 18)
+$
+(ATOM (QUOTE (3 . 4)))
+$
+(ATOM (QUOTE (1 2 3 4)))
+$
+(EQ (QUOTE X) (QUOTE X))
+$
+(EQ (QUOTE X) (QUOTE Y))
+$
+(EQ 5 7)
+$
+(EQ 7 7)
+$
+(NULL NIL)
+$
+(NULL T)
+$
+(NULL (QUOTE (3 . 4)))
+$
+(NULL 3)
+$
+(NULL (QUOTE (1 2 3 4 5 6)))
+$
+(INT 34)
+$
+(INT (QUOTE X))
+$
+(INT (QUOTE (3 . 4)))
+$
+(INT T)
+$
+(INT NIL)
+$
+(PLUS 5 4)
+$
+(MINUS 5 4)
+$
+(TIMES 5 4)
+$
+(QUOTIENT 20 4)
+$
+(REMAINDER 12 3)
+$
+(REMAINDER 15 4)
+$
+(PLUS (TIMES (MINUS 4 3) 7) 12)
+$
+(LESS 12 3)
+$
+(LESS 3 12)
+$
+(GREATER 12 3)
+$
+(GREATER 3 12)
+$
+(LESS 18 18)
+$
+(GREATER 18 18)
+$$

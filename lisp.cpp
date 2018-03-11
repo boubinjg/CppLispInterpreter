@@ -5,37 +5,17 @@
 #include<cctype>
 #include<stdexcept>
 #include<unordered_map>
-struct token{
-	//rParen, lParen, dollar, symbolID, integer, whitespace
-	std::string tokenType;
-	std::string tokenText;
-	token(std::string toktype, std::string toktext) {
-		tokenType = toktype;
-		tokenText = toktext;
-	}
-};
-
-struct SExp{
-	std::unordered_map<std::string, SExp*> usedIds;
-	int type;                //1: integer atom; 2: symbolic atom; 3: non-atom
-	int val;                 //if type 1
-	std::string name;        //if type 2
-	SExp* left; SExp* right; //if type 3;
-};
-
-SExp* convertList(std::vector<token> exp);
-SExp* convertToInternalRep(std::vector<token> exp);
-
+#include"lisp.h"
 //read std::cin until $$ is encountered
 //then split by $ into a vector
-void print(SExp* e){
+void output(SExp* e){
     if(e == NULL){ /*c++0x..."*/
         return;
     } else if(e->type == 3){
 		std::cout<<"(";
-		print(e->left);
+		output(e->left);
 		std::cout<<".";
-		print(e->right);
+		output(e->right);
 		std::cout<<")";
 	} else if(e->type == 2){
 		std::cout<<e->name;
@@ -237,14 +217,14 @@ SExp* convertList(std::vector<token> exp){
 			if(rp == exp.begin()){
 				throw std::runtime_error("");
 			} else if(rp+1 == exp.end()){
-				if(e->usedIds.find("NIL") != e->usedIds.end()){
-					e->right = e->usedIds["NIL"];
+				if(usedIds.find("NIL") != usedIds.end()){
+					e->right = usedIds["NIL"];
 				} else {
 					SExp *nil = new SExp;
 					nil->type = 2;
 					nil->name = "NIL";
 					e->right = nil;
-					e->usedIds["NIL"] = nil;
+					usedIds["NIL"] = nil;
 				}
 				e->left = convertToInternalRep(std::vector<token>(exp.begin(), rp+1));
 			} else {
@@ -256,14 +236,14 @@ SExp* convertList(std::vector<token> exp){
 			throw std::runtime_error("Invalid start to S-expression");
 		}
 	} else if(isAtom(exp[0])) {
-		if(e->usedIds.find("NIL") != e->usedIds.end()){
-			e->right = e->usedIds["NIL"];
+		if(usedIds.find("NIL") != usedIds.end()){
+			e->right = usedIds["NIL"];
 		} else {
 			SExp *nil = new SExp;
 			nil->type = 2;
 			nil->name = "NIL";
 			e->right = nil;
-			e->usedIds["NIL"] = nil;
+			usedIds["NIL"] = nil;
 		}
 		e->left = convertToInternalRep(std::vector<token>(exp.begin(), exp.begin()+1));
 	} else {
@@ -284,14 +264,14 @@ SExp* convertToInternalRep(std::vector<token> exp){
 			e->val = std::stoi(exp[0].tokenText);
 			return e;
 		} else if(exp[0].tokenType == "symbolId"){
-			if(e->usedIds.find(exp[0].tokenText) != e->usedIds.end()){
-				SExp *ret = e->usedIds[exp[0].tokenText];
+			if(usedIds.find(exp[0].tokenText) != usedIds.end()){
+				SExp *ret = usedIds[exp[0].tokenText];
 				delete e;
 				return ret;
 			} else {
 				e->type = 2;
 				e->name = exp[0].tokenText;
-				e->usedIds[exp[0].tokenText] = e;
+				usedIds[exp[0].tokenText] = e;
 			}
 			return e;
 		} else {
@@ -300,12 +280,12 @@ SExp* convertToInternalRep(std::vector<token> exp){
 	} else if(exp[0].tokenType == "lParen" && exp[exp.size()-1].tokenType == "rParen"){
 		//find null list
 		if(exp.size() == 2 || (exp.size() == 3 && exp[1].tokenType == "whitespace")){ 
-			if(e->usedIds.find("NIL") != e->usedIds.end()){
-				e = e->usedIds["NIL"];
+			if(usedIds.find("NIL") != usedIds.end()){
+				e = usedIds["NIL"];
 			} else {
 				e->type = 2;
 				e->name = "NIL";
-				e->usedIds["NIL"] = e;
+				usedIds["NIL"] = e;
 			}
 		} else {
 			std::vector<token> car = findCarAndCdr(exp);		
@@ -327,15 +307,130 @@ SExp* convertToInternalRep(std::vector<token> exp){
 
 	return e;
 }
+//places variable at top of Alist
+void bind(SExp*& alist, std::string name, SExp* arg){
+    SExp* argName = new SExp(name);
+    SExp* argVal = arg->left;
+    SExp* ret = new SExp(argName, argVal);
+    SExp* newAlist = new SExp(ret, alist);
+    alist = newAlist;
+}
+SExp* find(std::string name, SExp* alist){
+    while(alist!=NULL){
+        if(alist->left->left->name == name)
+            return alist->left->right;
+        else
+            alist = alist->right;
+    }
+    throw std::runtime_error("arg not on Alist");
+}
+SExp* eval(SExp* e, SExp* alist){
+    if(e->type == 1)
+        return e;
+    else if(e->type == 2){
+        //correct behavior?
+        SExp* als = alist;
+        if(usedIds.find(e->name) != usedIds.end())
+            return usedIds[e->name];
+        while(als != usedIds["NIL"]){
+            if(als->left->name == e->name){
+                return als->right;
+            }
+            als = als->right;
+        }
+        throw std::runtime_error("Var Not On A-list");
+    }
+    else if(e->type == 3){
+        //function application
+        if(e->left->name == "CAR") {
+            bind(alist, "CARA", e->right);
+            return car(e->right, alist);
+        } else if(e->left->name == "CDR") {
+            bind(alist, "CDRA", e->right);
+            return cdr(e->right, alist);
+        } else if(e->left->name == "CONS") {
+            bind(alist, "CONSA", e->right);
+            bind(alist, "CONSB", e->right->right);
+            return cons(e, alist);
+        } else if(e->left->name == "ATOM"){
+            bind(alist, "ATOMA", e->right);
+            return atom(e, alist);
+        } else if(e->left->name == "EQ"){
+            bind(alist, "EQA", e->right);
+            bind(alist, "EQB", e->right->right);
+            return eq(e, alist);
+        } else if(e->left->name == "NULL"){
+            bind(alist, "NULL", e->right);
+            return null(e, alist);
+        } else if(e->left->name == "INT"){
+            bind(alist, "INTA", e->right);
+            return intF(e, alist);
+        } else if(e->left->name == "PLUS"){
+            bind(alist, "PLUSA", e->right);
+            bind(alist, "PLUSB", e->right->right);
+            return plus(e, alist);
+        } else if(e->left->name == "MINUS"){
+            bind(alist, "MINA", e->right);
+            bind(alist, "MINB", e->right->right);
+            return minus(e, alist);
+        } else if(e->left->name == "TIMES"){
+            bind(alist, "TIMA", e->right);
+            bind(alist, "TIMB", e->right->right);
+            return times(e, alist);
+        } else if(e->left->name == "QUOTIENT"){
+            bind(alist, "QUOA", e->right);
+            bind(alist, "QUOB", e->right->right);
+            return quotient(e, alist);
+        } else if(e->left->name == "REMAINDER"){
+            bind(alist, "REMA", e->right);
+            bind(alist, "REMB", e->right->right);
+            return remainder(e, alist);
+        } else if(e->left->name == "LESS"){
+            bind(alist, "LESA", e->right);
+            bind(alist, "LESB", e->right->right);
+            return less(e, alist);
+        } else if(e->left->name == "GREATER"){
+            bind(alist, "GREA", e->right);
+            bind(alist, "GREB", e->right->right);
+            return greater(e, alist);
+        } else if(e->left->name == "QUOTE"){
+            bind(alist, "QUOTE", e->right);
+            return quote(e, alist);
+        }
+        //quote
+        //_________________
+        //cond
+        //defun
+        throw std::runtime_error("Not a Lisp Expression");
+    }
+    throw std::runtime_error("Invalid Lisp Expression");
+}
 int main(){
 	bool end = false;
-	while(!end){
+	SExp* NIL = new SExp;
+	NIL->type = 2;
+	NIL->name = "NIL";
+	usedIds["NIL"] = NIL;
+	SExp* T = new SExp;
+	T->type = 2;
+	T->name = "T";
+	usedIds["T"] = T;
+    
+    while(!end){
 	    std::string s;
 	    end = read(s);
         try{
+            //read S expression
             SExp* e = convertToInternalRep(tokenize(s));
-            print(e);
+            //print S expression
+            output(e);
             std::cout<<std::endl;
+            
+            //evaluate S expression
+            SExp* o = eval(e, NIL);
+            output(o);
+            std::cout<<std::endl;
+
         } catch(std::runtime_error e){
             std::cerr<<"Exception: "<<e.what()<<std::endl;
         }
