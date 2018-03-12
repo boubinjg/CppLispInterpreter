@@ -471,9 +471,9 @@ SExp* eval(SExp* e, SExp* alist){
             for(size_t i = 0; i<argcount; i++) {
                 if(argCt(sto->right->left) != 1)
                     throw std::runtime_error("Wrong Number of arguments: COND");
-                bind(alist, "CONDB" + std::to_string((int)i),  
+                bind(alist, "CONDB" + std::to_string((long long int)i),  
                      sto->right->left);
-                bind(alist, "CONDE" + std::to_string((int)i),
+                bind(alist, "CONDE" + std::to_string((long long int)i),
                      sto->right->left->right);
                 sto = sto->right;
             }
