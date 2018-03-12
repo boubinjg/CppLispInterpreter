@@ -362,17 +362,17 @@ SExp* eval(SExp* e, SExp* alist){
     else if(e->type == 2){
         //correct behavior?
         SExp* als = alist;
+        if(e->name == "T" || e->name == "NIL"){
+            return usedIds[e->name];
+        }
         while(als != usedIds["NIL"]) {
             if(als->left->left->name == e->name) {
                 return als->left->right;
             }
             als = als->right;
         }
-        if(usedIds.find(e->name) != usedIds.end()){
-            return usedIds[e->name];
-        }
 
-        throw std::runtime_error("Var Not On A-list");
+        throw std::runtime_error("UNBOUND ATOM");
     }
     else if(e->type == 3) {
         //function application
@@ -490,7 +490,7 @@ SExp* eval(SExp* e, SExp* alist){
             if(e->right->left->type != 2)
                 throw std::runtime_error("DEFUN: First arg is not a function name");
             bindDlist(def);   
-            return find(e->right->left->name, dlist);
+            return e->right->left;
         } else if(e->left->type == 2) {
             std::string name = e->left->name;
             SExp* func = find(name, dlist);
