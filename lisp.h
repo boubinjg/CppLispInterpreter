@@ -181,9 +181,9 @@ SExp* cond(SExp* e, SExp* alist, size_t argcount) {
     std::vector<SExp*> bools, exps;
     for(size_t i = 0; i<argcount; i++) {
             bools.push_back(
-                find("CONDB"+std::to_string(i),alist));
+                find("CONDB"+std::to_string((long long int)i),alist));
             exps.push_back(
-                find("CONDE"+std::to_string(i),alist));
+                find("CONDE"+std::to_string((long long int)i),alist));
     }
     for(auto it=bools.begin(); it!=bools.end(); it++){
         if(eval(*it, alist) == usedIds["T"]){
