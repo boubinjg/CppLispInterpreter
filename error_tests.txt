@@ -1,0 +1,118 @@
+X
+$
+(PLUS 3 4)
+$
+(1 . 2)
+$
+(1 2 3 4)
+$
+(CAR (QUOTE (4)))
+$
+(CDR (4))
+$
+((1) 3 4)
+$
+(CAR 3)
+$
+(CDR 3)
+$
+(PLUS (3.4) 5)
+$
+(QUOTE . (3.4))
+$
+(QUOTE 4 5 ())
+$
+(QUOTE (3.4))
+$
+(QUOTE (3.4) 5 7 8 NIL)
+$
+(CAR 3)
+$
+(CAR (QUOTE (3. 4)))
+$
+(CAR 1 2)
+$
+(CAR (QUOTE (3)) 2)
+$
+(CONS 1)
+$
+(CONS 2 3 4)
+$
+(CONS (QUOTE (5.6)) (QUOTE (1)))
+$
+(CONS 2 3)
+$
+(ATOM (QUOTE X))
+$
+(ATOM 3 4)
+$
+(NULL (QUOTE (5.6)) 3 5 6 7 8 9 4)
+$
+(INT 4 5 6 (QUOTE (NIL)))
+$
+(LESS 5 6 7)
+$
+(LESS 3)
+$
+(GREATER 3 4 8)
+$
+(GREATER (QUOTE (12 . 3)) 5)
+$
+(EQ (QUOTE (3.4)) 7)
+$
+(EQ (QUOTE (3.4)) 7 8)
+$
+(EQ (QUOTE (3.4)))
+$
+(PLAUS 3 4)
+$
+(MYTHESISISDUEINLIKETWOWEEKSHAHAHA 5 8 9 10)
+$
+(DEFUN TRIVIAL (X) X)
+$
+(DEFUN COUNT (X)
+   (COND
+       ((ATOM X) 1)
+           (T (PLUS (COUNT (CAR X)) (COUNT (CDR X))))
+             )
+   )
+$
+(TRIVIAL)
+$
+(COUNT)
+$
+(TRIVIAL 123 123)
+$
+(COUNT 15 15 15 15)
+$
+(COND (T 1) (NIL 0))
+$
+(COND (T 1 2) (NIL 0))
+$
+(COND (3 4) (5 6))
+$
+(COND (NIL 0) (T))
+$
+(COND (T NIL) NIL)
+$
+(COND)
+$
+(COND (QUOTE (2.3)))
+$
+(DEFUN F (P1 P2))
+$
+(DEFUN)
+$
+(DEFUN FUNCNAME 3 X)
+$
+(DEFUN EQUAL (X)
+   (COND
+       ((ATOM X) (COND ((ATOM Y) (EQ X Y)) (T NIL)))
+           ((ATOM Y) NIL)
+               ((EQUAL (CAR X) (CAR Y)) (EQUAL (CDR X) (CDR Y)))
+                   (T NIL)
+                     )
+   )
+$
+(EQUAL (QUOTE (1.2)))
+$$

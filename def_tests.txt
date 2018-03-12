@@ -1,0 +1,59 @@
+(DEFUN TRIVIAL (X) X)
+$
+(TRIVIAL 12)
+$
+(DEFUN COUNT (X)
+  (COND
+      ((ATOM X) 1)
+          (T (PLUS (COUNT (CAR X)) (COUNT (CDR X))))
+            )
+  )
+$
+(COUNT (QUOTE (1 2 3 4)))
+$
+(COUNT (QUOTE (2.1)))
+$
+(DEFUN EQUAL (X Y)
+  (COND
+      ((ATOM X) (COND ((ATOM Y) (EQ X Y)) (T NIL)))
+          ((ATOM Y) NIL)
+              ((EQUAL (CAR X) (CAR Y)) (EQUAL (CDR X) (CDR Y)))
+                  (T NIL)
+                    )
+  )
+$
+(EQUAL 3 4)
+$
+(EQUAL 3 3)
+$
+(EQUAL () NIL)
+$
+(EQUAL (QUOTE (1.2)) (QUOTE  (1.2)))
+$
+(EQUAL (QUOTE (1.2)) (QUOTE  (1 2)))
+$
+(EQUAL (QUOTE (1 2)) (QUOTE (1 . (2 . NIL))))
+$
+(DEFUN SILLY () 12)
+$
+(SILLY)
+$
+(DEFUN SILLY (A B) (PLUS A B))
+$
+(SILLY 5 6)
+$
+(SILLY (CAR (QUOTE (5 . 6))) (CDR (QUOTE (5 . 6))) )
+$
+(DEFUN MINUS2 (A B) (MINUS A B))
+$
+(DEFUN NOTSOSILLY (A B)
+  (COND
+      ((EQ A 0) (PLUS B 1))
+      ((EQ B 0) (NOTSOSILLY (MINUS2 A 1) 1))
+      (T (NOTSOSILLY (MINUS2 A 1) (NOTSOSILLY A (MINUS2 B 1))))
+              ))
+$
+(NOTSOSILLY 0 0)
+$
+(NOTSOSILLY 1 1)
+$$

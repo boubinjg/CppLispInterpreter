@@ -1,0 +1,11 @@
+(DEFUN MINUS2 (A B) (MINUS A B))
+$
+(DEFUN NOTSOSILLY (A B)
+  (COND
+      ((EQ A 0) (PLUS B 1))
+          ((EQ B 0) (NOTSOSILLY (MINUS2 A 1) 1))
+              (T (NOTSOSILLY (MINUS2 A 1) (NOTSOSILLY A (MINUS2 B 1))))
+              ))
+$
+(NOTSOSILLY 1 1)
+$$

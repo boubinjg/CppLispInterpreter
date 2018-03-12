@@ -1,3 +1,4 @@
+//Author: Jayson Boubin, Spring 2018
 #include<iostream>
 #include<string>
 #include<vector>
@@ -319,16 +320,26 @@ void bind(SExp*& alist, std::string name, SExp* arg){
     SExp* newAlist = new SExp(ret, alist);
     alist = newAlist;
 }
+void bindFP(SExp*& alist, std::string name, SExp* arg){
+    SExp* argName = new SExp(name);
+    SExp* argVal = arg;
+    SExp* ret = new SExp(argName, argVal);
+    SExp* newAlist = new SExp(ret, alist);
+    alist = newAlist;
+}
 SExp* find(std::string name, SExp* alist){
-    while(alist!=NULL){
+    while(alist!=usedIds["NIL"]){
         if(alist->left->left->name == name)
             return alist->left->right;
         else
             alist = alist->right;
     }
-    throw std::runtime_error("arg not on Alist");
+    throw std::runtime_error("Invalid Function");
 }
 size_t argCt(SExp* e){
+    if(e->type != 3){
+        throw std::runtime_error("Not a function call");
+    }
     size_t ret = 0;
     while(e->right!=usedIds["NIL"]){
         e = e->right;
@@ -336,31 +347,45 @@ size_t argCt(SExp* e){
     }
     return ret;
 }
+bool isList(SExp* e){
+    while(e != usedIds["NIL"]){
+        if(e->type != 3){
+            return false;
+        } 
+        e = e->right;
+    }
+    return true;
+}
 SExp* eval(SExp* e, SExp* alist){
     if(e->type == 1)
         return e;
     else if(e->type == 2){
         //correct behavior?
         SExp* als = alist;
-        if(usedIds.find(e->name) != usedIds.end())
-            return usedIds[e->name];
         while(als != usedIds["NIL"]) {
-            if(als->left->name == e->name) {
-                return als->right;
+            if(als->left->left->name == e->name) {
+                return als->left->right;
             }
             als = als->right;
         }
+        if(usedIds.find(e->name) != usedIds.end()){
+            return usedIds[e->name];
+        }
+
         throw std::runtime_error("Var Not On A-list");
     }
-    else if(e->type == 3){
+    else if(e->type == 3) {
         //function application
+        if(!isList(e)){
+            throw std::runtime_error("Not a valid lisp expression");
+        }
         if(e->left->name == "CAR") {
             if(argCt(e) != 1)
                 throw std::runtime_error("Wrong number of argumants: CAR");
             bind(alist, "CARA", e->right);
             return car(e->right, alist);
         } else if(e->left->name == "CDR") {
-             if(argCt(e) != 1)
+            if(argCt(e) != 1)
                 throw std::runtime_error("Wrong number of arguments: CDR");
             bind(alist, "CDRA", e->right);
             return cdr(e->right, alist);
@@ -443,7 +468,7 @@ SExp* eval(SExp* e, SExp* alist){
             if(argcount == 0)
                 throw std::runtime_error("Wrong Number of arguments: COND");
             SExp* sto = e;
-            for(size_t i = 0; i<argcount; i++){
+            for(size_t i = 0; i<argcount; i++) {
                 if(argCt(sto->right->left) != 1)
                     throw std::runtime_error("Wrong Number of arguments: COND");
                 bind(alist, "CONDB" + std::to_string(i),  
@@ -452,23 +477,49 @@ SExp* eval(SExp* e, SExp* alist){
                      sto->right->left->right);
                 sto = sto->right;
             }
-            std::cout<<"done bind"<<std::endl;
             return cond(e, alist, argcount);
-        } else if(e->left->name == "DEFUN"){
-            std::cout<<"IN DEFUN"<<std::endl;
+        } else if(e->left->name == "DEFUN") {
             if(argCt(e) != 3)
                 throw std::runtime_error("Wrong Number of arguments: DEFUN");
             
-            //DEF->left = e->right->left;
             SExp* params = new SExp(e->right->right->left,
                             e->right->right->right->left); 
+            if(!isList(params->left))
+                throw std::runtime_error("Function Params must be a list");
             SExp* def = new SExp(e->right->left, params);
             if(e->right->left->type != 2)
                 throw std::runtime_error("DEFUN: First arg is not a function name");
             bindDlist(def);   
             return find(e->right->left->name, dlist);
-        } 
-        throw std::runtime_error("Not a Lisp Expression");
+        } else if(e->left->type == 2) {
+            std::string name = e->left->name;
+            SExp* func = find(name, dlist);
+            SExp* params = func->left;
+            SExp* body = func->right;
+
+            //get names of each arg from params
+            std::vector<std::string> paramNames;
+            SExp* sto = params;
+            while(sto != usedIds["NIL"]){
+                paramNames.push_back(sto->left->name);
+                sto = sto->right;
+            }   
+            if(argCt(e) != paramNames.size())
+                throw std::runtime_error("Incorrect Number of Args in Call to User Defined Func");
+            sto = e->right;
+            std::vector<SExp*> argList;
+            for(size_t i = 0; i<paramNames.size(); i++){
+                SExp* arg = eval(sto->left, alist);
+                argList.push_back(arg);
+                sto = sto->right;
+            }
+            sto = e->right;
+            for(size_t i = 0; i<paramNames.size(); i++){
+                bindFP(alist, paramNames[i], argList[i]);
+            }
+            SExp* ret = eval(body, alist);
+            return ret;
+        }
     }
     throw std::runtime_error("Invalid Lisp Expression");
 }
