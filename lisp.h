@@ -139,6 +139,8 @@ SExp* quotient(SExp* e, SExp* alist){
     SExp* na = eval(find("QUOA", alist), alist);
     SExp* nb = eval(find("QUOB", alist), alist);
     if(na->type == 1 && nb->type == 1){
+        if(nb->val == 0)
+            throw std::runtime_error("Divide By Zero");
         return new SExp(na->val / nb->val);
     } 
     throw std::runtime_error("Non-Ints passed to math op");
@@ -147,6 +149,8 @@ SExp* remainder(SExp* e, SExp* alist){
     SExp* na = eval(find("REMA", alist), alist);
     SExp* nb = eval(find("REMB", alist), alist);
     if(na->type == 1 && nb->type == 1){
+        if(nb->val == 0)
+            throw std::runtime_error("Divide By Zero");
         return new SExp(na->val % nb->val);
     } 
     throw std::runtime_error("Non-Ints passed to math op");
